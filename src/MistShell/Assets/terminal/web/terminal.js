@@ -67,6 +67,17 @@
     term.loadAddon(fit);
     term.open(wrapper);
 
+    // Ctrl+V also emits a native paste event in WebView2. Our custom key
+    // handler already performs the paste; suppress the native path so the
+    // clipboard text is not inserted twice.
+    const nativeTextarea = wrapper.querySelector('.xterm-helper-textarea');
+    if (nativeTextarea) {
+      nativeTextarea.addEventListener('paste', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }, true);
+    }
+
     term.onData(function (data) {
       // Keep the prompt/input visible even if the user had scrolled back.
       try { term.scrollToBottom(); } catch (_) { }
@@ -102,6 +113,7 @@
         return false;
       }
       if (event.ctrlKey && event.shiftKey && event.code === 'KeyV') {
+        event.preventDefault();
         pasteClipboard(id);
         return false;
       }
@@ -117,6 +129,7 @@
       // Plain Ctrl+V is convenient for pasting from Windows clipboard. The
       // Ctrl+Shift+V path above remains available as the terminal-safe form.
       if (event.ctrlKey && !event.shiftKey && !event.altKey && event.code === 'KeyV') {
+        event.preventDefault();
         pasteClipboard(id);
         return false;
       }
@@ -128,6 +141,7 @@
         return true;
       }
       if (event.shiftKey && !event.ctrlKey && !event.altKey && event.code === 'Insert') {
+        event.preventDefault();
         pasteClipboard(id);
         return false;
       }
