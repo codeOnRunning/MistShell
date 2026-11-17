@@ -1,0 +1,44 @@
+<Window x:Class="MistShell.Views.ShortcutHelpWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="快捷键" Width="530" Height="610" WindowStyle="None" ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        Background="{DynamicResource WindowBackgroundBrush}">
+    <Border BorderBrush="{DynamicResource BorderStrongBrush}" BorderThickness="1"
+            Background="{DynamicResource WindowBackgroundBrush}"
+            TextElement.Foreground="{DynamicResource TextPrimaryBrush}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="43" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="56" />
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Background="{DynamicResource TitleBarBrush}" BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="0,0,0,1" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+                <Grid Margin="15,0,5,0">
+                    <TextBlock Text="快捷键" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    <Button Style="{StaticResource CloseTitleBarButton}" Content="&#xE8BB;" HorizontalAlignment="Right"
+                            Width="38" Height="42" Click="Close_Click" />
+                </Grid>
+            </Border>
+
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="22,16,22,12">
+                    <TextBlock Text="终端与连接列表" Style="{StaticResource SectionTitle}" />
+                    <StackPanel x:Name="Rows" Margin="0,9,0,0" />
+                    <Border Background="{DynamicResource SurfaceElevatedBrush}" CornerRadius="7" Padding="11,9" Margin="0,13,0,0">
+                        <TextBlock Text="快捷键目前为固定方案，不需额外配置；可在设置里查看此说明。"
+                                   Style="{StaticResource MutedText}" TextWrapping="Wrap" />
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <Border Grid.Row="2" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0"
+                    Background="{DynamicResource SurfaceBrush}">
+                <Button Content="关闭" Style="{StaticResource BaseButton}" MinWidth="80" Height="32"
+                        HorizontalAlignment="Right" Margin="18,0" Click="Close_Click" />
+            </Border>
+        </Grid>
+    </Border>
+</Window>

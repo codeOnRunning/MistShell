@@ -1,0 +1,41 @@
+<Window x:Class="MistShell.Views.SnippetDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="新建命令片段" Width="520" Height="390" WindowStyle="None" ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        Background="{DynamicResource WindowBackgroundBrush}">
+    <Border BorderBrush="{DynamicResource BorderStrongBrush}" BorderThickness="1" Background="{DynamicResource WindowBackgroundBrush}" TextElement.Foreground="{DynamicResource TextPrimaryBrush}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="43" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="60" />
+            </Grid.RowDefinitions>
+            <Border Grid.Row="0" Background="{DynamicResource TitleBarBrush}" BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="0,0,0,1" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+                <Grid Margin="15,0,5,0">
+                    <TextBlock Text="新建命令片段" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    <Button Style="{StaticResource CloseTitleBarButton}" Content="&#xE8BB;" HorizontalAlignment="Right"
+                            Width="38" Height="42" Click="Cancel_Click" />
+                </Grid>
+            </Border>
+            <StackPanel Grid.Row="1" Margin="22,17,22,8">
+                <TextBlock Text="名称" Style="{StaticResource FieldLabel}" />
+                <TextBox x:Name="NameBox" MinHeight="34" />
+                <TextBlock Text="命令" Style="{StaticResource FieldLabel}" Margin="2,14,0,6" />
+                <TextBox x:Name="CommandBox" MinHeight="96" AcceptsReturn="True" TextWrapping="Wrap"
+                         VerticalScrollBarVisibility="Auto" FontFamily="{DynamicResource MonoFont}" FontSize="12" />
+                <TextBlock Text="双击右侧“命令”面板中的片段，或点发送按钮，即可把命令发送到当前终端。"
+                           Style="{StaticResource MutedText}" Margin="2,10,0,0" TextWrapping="Wrap" />
+            </StackPanel>
+            <Border Grid.Row="2" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0"
+                    Background="{DynamicResource SurfaceBrush}">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="18,0">
+                    <Button Content="取消" Style="{StaticResource BaseButton}" MinWidth="70" Height="32" Click="Cancel_Click" />
+                    <Button Content="添加" Style="{StaticResource PrimaryButton}" MinWidth="82" Height="32" Margin="8,0,0,0"
+                            IsDefault="True" Click="Ok_Click" />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

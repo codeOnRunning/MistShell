@@ -1,0 +1,47 @@
+<Application x:Class="MistShell.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:MistShell.Converters">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Themes/Controls.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#E8E5DE" />
+            <SolidColorBrush x:Key="SurfaceBrush" Color="#F0EDE6" />
+            <SolidColorBrush x:Key="SurfaceElevatedBrush" Color="#F5F2EC" />
+            <SolidColorBrush x:Key="SurfaceHoverBrush" Color="#E2DED5" />
+            <SolidColorBrush x:Key="SurfaceActiveBrush" Color="#DCD7CC" />
+            <SolidColorBrush x:Key="SidebarBrush" Color="#E3DFD7" />
+            <SolidColorBrush x:Key="TitleBarBrush" Color="#E1DDD5" />
+            <SolidColorBrush x:Key="BorderBrush" Color="#D1CBC0" />
+            <SolidColorBrush x:Key="BorderStrongBrush" Color="#BDB6A9" />
+            <SolidColorBrush x:Key="TextPrimaryBrush" Color="#2B2F33" />
+            <SolidColorBrush x:Key="TextSecondaryBrush" Color="#62686B" />
+            <SolidColorBrush x:Key="TextMutedBrush" Color="#8A8F90" />
+            <SolidColorBrush x:Key="AccentBrush" Color="#3D7C73" />
+            <SolidColorBrush x:Key="AccentHoverBrush" Color="#326B63" />
+            <SolidColorBrush x:Key="AccentSoftBrush" Color="#D4E3DE" />
+            <SolidColorBrush x:Key="AccentTextBrush" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="DangerBrush" Color="#B65A5A" />
+            <SolidColorBrush x:Key="DangerSoftBrush" Color="#F2DEDC" />
+            <SolidColorBrush x:Key="WarningBrush" Color="#A9783E" />
+            <SolidColorBrush x:Key="SuccessBrush" Color="#3F7D5A" />
+            <SolidColorBrush x:Key="TerminalBackgroundBrush" Color="#E9E6DF" />
+            <SolidColorBrush x:Key="TerminalForegroundBrush" Color="#2D3336" />
+
+            <FontFamily x:Key="UiFont">Microsoft YaHei UI, Segoe UI</FontFamily>
+            <FontFamily x:Key="MonoFont">Cascadia Mono, Consolas</FontFamily>
+
+            <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+            <converters:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVisibility" />
+            <converters:NonEmptyStringToVisibilityConverter x:Key="NonEmptyToVisibility" />
+            <converters:EqualityToVisibilityConverter x:Key="EqualityToVisibility" />
+            <converters:EqualityToBooleanConverter x:Key="EqualityToBoolean" />
+            <converters:HexColorToBrushConverter x:Key="HexColorToBrush" />
+            <converters:SessionStatusToBrushConverter x:Key="SessionStatusToBrush" />
+            <converters:CountToVisibilityConverter x:Key="CountToVisibility" />
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

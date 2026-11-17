@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self';">
+  <title>MistShell Terminal</title>
+  <link rel="stylesheet" href="xterm.css">
+  <link rel="stylesheet" href="terminal.css">
+</head>
+<body>
+  <div id="terminal-stack" aria-label="SSH 终端"></div>
+  <div id="context-menu" role="menu" aria-hidden="true">
+    <button type="button" data-action="copy">复制</button>
+    <button type="button" data-action="paste">粘贴</button>
+    <button type="button" data-action="selectall">全选</button>
+    <div class="menu-sep"></div>
+    <button type="button" data-action="clear">清屏</button>
+  </div>
+  <script src="xterm.js"></script>
+  <script src="addon-fit.js"></script>
+  <script src="terminal.js"></script>
+</body>
+</html>

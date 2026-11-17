@@ -1,0 +1,23 @@
+**/bin/
+**/obj/
+dist/
+**/data/
+*.user
+*.suo
+tools/test-ssh/node_modules/
+tools/test-ssh/host.key
+tools/test-ssh/files/
+tools/test-ssh/server.out.log
+tools/test-ssh/server.err.log
+tests/**/TestResults/
+
+# Local build/run artifacts
+final-build-*.log
+*.log
+*.pdb
+.vs/
+
+
+# Dependencies
+**/node_modules/
+
