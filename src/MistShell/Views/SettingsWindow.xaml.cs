@@ -12,8 +12,24 @@ namespace MistShell.Views;
 public partial class SettingsWindow : Window
 {
     private readonly Action<string>? _themePreview;
+    private readonly List<(Button Button, Border Swatch, string Hex)> _foregroundSwatches = new();
     private double _fontSize;
     private string _fontFamily = "JetBrains Mono";
+    private static readonly (string Name, string Hex)[] ForegroundColors =
+    [
+        ("纯白", "#FFFFFF"),
+        ("柔和白", "#E7E9E6"),
+        ("暖白", "#F0E7DE"),
+        ("浅灰", "#B8C0C4"),
+        ("雾绿", "#9FD3B3"),
+        ("薄荷", "#8BD6C4"),
+        ("天蓝", "#8FC7E8"),
+        ("淡紫", "#C2A8E8"),
+        ("浅黄", "#E8D18F"),
+        ("浅橙", "#E8B07A"),
+        ("浅粉", "#E6A6B8"),
+        ("珊瑚", "#E58C8C")
+    ];
 
     public SettingsWindow(AppSettings settings, Action<string>? themePreview = null)
     {
@@ -22,6 +38,7 @@ public partial class SettingsWindow : Window
         _fontSize = Math.Clamp(settings.TerminalFontSize, 10, 26);
         _fontFamily = settings.TerminalFontFamily;
         TerminalForegroundBox.Text = settings.TerminalForegroundColor;
+        BuildForegroundSwatches(settings.TerminalForegroundColor);
         FontSizeText.Text = _fontSize.ToString("0");
         ScrollbackBox.Text = settings.ScrollbackLines.ToString();
         LowMemoryCheck.IsChecked = settings.LowMemoryMode;
@@ -150,6 +167,62 @@ public partial class SettingsWindow : Window
         FontSizeText.Text = _fontSize.ToString("0");
     }
 
+    private void BuildForegroundSwatches(string selectedColor)
+    {
+        ForegroundSwatchPanel.Children.Clear();
+        _foregroundSwatches.Clear();
+
+        foreach (var (name, hex) in ForegroundColors)
+        {
+            var swatch = new Border
+            {
+                Width = 28,
+                Height = 28,
+                CornerRadius = new CornerRadius(7),
+                Background = ThemeManager.Brush(hex),
+                BorderThickness = new Thickness(1),
+                BorderBrush = (Brush)FindResource("BorderBrush")
+            };
+            var button = new Button
+            {
+                Content = swatch,
+                Width = 36,
+                Height = 36,
+                Padding = new Thickness(0),
+                Margin = new Thickness(0, 0, 4, 4),
+                Background = Brushes.Transparent,
+                BorderThickness = new Thickness(0),
+                HorizontalContentAlignment = HorizontalAlignment.Center,
+                VerticalContentAlignment = VerticalAlignment.Center,
+                ToolTip = $"{name}  {hex}"
+            };
+            var color = hex;
+            button.Click += (_, _) => SetForegroundColor(color);
+            ForegroundSwatchPanel.Children.Add(button);
+            _foregroundSwatches.Add((button, swatch, hex));
+        }
+        UpdateForegroundSwatchSelection();
+    }
+
+    private void SetForegroundColor(string hex)
+    {
+        TerminalForegroundBox.Text = hex;
+        UpdateForegroundSwatchSelection();
+    }
+
+    private void UpdateForegroundSwatchSelection()
+    {
+        var selected = TerminalForegroundBox?.Text.Trim() ?? "";
+        foreach (var item in _foregroundSwatches)
+        {
+            var isSelected = string.Equals(selected, item.Hex, StringComparison.OrdinalIgnoreCase);
+            item.Swatch.BorderBrush = isSelected
+                ? (Brush)FindResource("AccentBrush")
+                : (Brush)FindResource("BorderBrush");
+            item.Swatch.BorderThickness = new Thickness(isSelected ? 2 : 1);
+        }
+    }
+
     private void TerminalForegroundBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
     {
         if (TerminalForegroundBox is null) return;
@@ -162,11 +235,13 @@ public partial class SettingsWindow : Window
         {
             TerminalForegroundBox.BorderBrush = (Brush)FindResource("BorderBrush");
         }
+        UpdateForegroundSwatchSelection();
     }
 
     private void ClearForeground_Click(object sender, RoutedEventArgs e)
     {
         TerminalForegroundBox.Text = "";
+        UpdateForegroundSwatchSelection();
     }
 
     private void Shortcuts_Click(object sender, RoutedEventArgs e)
