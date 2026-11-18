@@ -128,7 +128,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     public string SessionCountText => Sessions.Count == 0 ? "无活动会话" : $"{Sessions.Count} 个会话";
     public string SelectedSessionTitle => SelectedSession?.Title ?? "未选择会话";
     public string SelectedSessionHost => SelectedSession?.HostDisplay ?? "从左侧选择服务器开始";
-    public string AppVersion => "v0.1.25";
+    public string AppVersion => "v0.1.26";
 
     public event Action<SessionViewModel?>? ActiveSessionChanged;
     public event Action<int>? DockTabChanged;

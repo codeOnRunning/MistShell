@@ -79,8 +79,11 @@
     }
 
     term.onData(function (data) {
-      // Keep the prompt/input visible even if the user had scrolled back.
-      try { term.scrollToBottom(); } catch (_) { }
+      // Keep the prompt/input visible in a normal shell, but do not disturb
+      // full-screen applications such as top, htop, vim or less.
+      try {
+        if (term.buffer.active.type !== 'alternate') term.scrollToBottom();
+      } catch (_) { }
       send({ type: 'input', sessionId: id, data: data });
       if (data === '\r' || data === '\n') {
         const commandLine = currentCommandLine(term);
@@ -184,15 +187,34 @@
   }
 
   function scrollToBottom(record) {
-    try { record.term.scrollToBottom(); } catch (_) { }
+    try {
+      // Never force a full-screen application (top/vim/less) to the bottom
+      // of the normal scrollback; it owns its own alternate screen viewport.
+      if (record.term.buffer.active.type === 'alternate') return;
+      record.term.scrollToBottom();
+    } catch (_) { }
+  }
+
+  function isAtBottom(record) {
+    try {
+      const buffer = record.term.buffer.active;
+      return buffer.type !== 'alternate' && buffer.viewportY >= buffer.baseY;
+    } catch (_) {
+      return true;
+    }
   }
 
   function writeSession(id, base64) {
     const record = sessions.get(id);
     if (!record) return;
     try {
-      record.term.write(decodeBase64(base64), function () { scrollToBottom(record); });
-      scrollToBottom(record);
+      // Follow output only when the user was at the bottom. If they scrolled
+      // up to inspect a full-screen command, keep their viewport position.
+      const follow = isAtBottom(record);
+      record.term.write(decodeBase64(base64), function () {
+        if (follow) scrollToBottom(record);
+      });
+      if (follow) scrollToBottom(record);
     } catch (_) { }
   }
 

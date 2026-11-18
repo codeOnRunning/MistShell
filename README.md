@@ -5,7 +5,7 @@
 1. **浅色主题不刺眼**：默认“雾纸”主题使用暖灰背景，不使用大面积纯白；另有“暖砂”和“深岩”深色主题。
 2. **内存占用更低**：原生 .NET 9 / WPF 外壳，不运行 JVM，也不采用 Electron；所有终端标签共享一个 WebView2 渲染进程，并启用轻量单进程渲染模式。
 
-> 当前版本：`v0.1.25`，Windows 10/11 x64。
+> 当前版本：`v0.1.26`，Windows 10/11 x64。
 
 ![MistShell 浅色主题](docs/screenshot-light.png)
 
@@ -65,7 +65,7 @@
 
 ## 快速开始
 
-1. 解压 `MistShell-0.1.25-win-x64.zip`。
+1. 解压 `MistShell-0.1.26-win-x64.zip`。
 2. 运行 `MistShell.exe`。
 3. 点击“新建连接”，填写主机、端口、用户名和密码/私钥。
 4. 双击左侧服务器，或点击条目右侧的箭头即可连接。
@@ -252,7 +252,7 @@ dotnet run --project tools\SmokeTests\SmokeTests.csproj -c Release
 dotnet publish src\MistShell\MistShell.csproj `
   -c Release -r win-x64 --self-contained true `
   -p:PublishSingleFile=false -p:DebugType=None `
-  -o dist\MistShell-0.1.25-win-x64
+  -o dist\MistShell-0.1.26-win-x64
 ```
 
 xUnit 测试在 `tests\MistShell.Tests`：
