@@ -8,6 +8,7 @@ public sealed class AppSettings
     public string Theme { get; set; } = "Mist";
     public bool FollowTerminalDirectory { get; set; } = true;
     public string TerminalFontFamily { get; set; } = "JetBrains Mono";
+    public string TerminalForegroundColor { get; set; } = "";
     public double TerminalFontSize { get; set; } = 14;
     public double TerminalLineHeight { get; set; } = 1.25;
     public int ScrollbackLines { get; set; } = 3000;

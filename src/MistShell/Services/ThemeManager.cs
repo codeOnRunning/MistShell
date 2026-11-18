@@ -69,10 +69,10 @@ public static class ThemeManager
     private static void Set(ResourceDictionary resources, string key, string hex)
         => resources[key] = Brush(hex);
 
-    public static object GetTerminalTheme(ThemePalette p) => new
+    public static object GetTerminalTheme(ThemePalette p, string? foregroundOverride = null) => new
     {
         background = p.TerminalBackground,
-        foreground = p.TerminalForeground,
+        foreground = string.IsNullOrWhiteSpace(foregroundOverride) ? p.TerminalForeground : foregroundOverride,
         cursor = p.TerminalCursor,
         cursorAccent = p.TerminalBackground,
         selectionBackground = p.TerminalSelection,
@@ -91,6 +91,6 @@ public static class ThemeManager
         brightBlue = p.TerminalBlue,
         brightMagenta = p.TerminalMagenta,
         brightCyan = p.TerminalCyan,
-        brightWhite = p.TextPrimary
+        brightWhite = string.IsNullOrWhiteSpace(foregroundOverride) ? p.TextPrimary : foregroundOverride
     };
 }

@@ -23,6 +23,7 @@ public partial class TerminalHost : UserControl, IDisposable
     private double _fontSize = 14;
     private double _lineHeight = 1.25;
     private int _scrollback = 2000;
+    private string? _customForeground;
 
     public TerminalHost()
     {
@@ -218,9 +219,10 @@ public partial class TerminalHost : UserControl, IDisposable
         SendRaw(new { type = "write", sessionId, data = Convert.ToBase64String(data) });
     }
 
-    public void SetTheme(ThemePalette palette)
+    public void SetTheme(ThemePalette palette, string? customForeground = null)
     {
         _palette = palette;
+        _customForeground = customForeground;
         try
         {
             WebView.DefaultBackgroundColor = ColorTranslator.FromHtml(palette.TerminalBackground);
@@ -272,7 +274,7 @@ public partial class TerminalHost : UserControl, IDisposable
         SendRaw(new
         {
             type = "theme",
-            theme = ThemeManager.GetTerminalTheme(_palette),
+            theme = ThemeManager.GetTerminalTheme(_palette, _customForeground),
             background = _palette.TerminalBackground,
             menuBackground = _palette.SurfaceElevated,
             menuBorder = _palette.Border,

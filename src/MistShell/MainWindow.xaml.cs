@@ -60,7 +60,8 @@ public partial class MainWindow : Window
         TerminalView.SetFontFamily(_viewModel.Settings.TerminalFontFamily);
         TerminalView.SetLineHeight(_viewModel.Settings.TerminalLineHeight);
         TerminalView.SetFontSize(_viewModel.Settings.TerminalFontSize);
-        TerminalView.SetTheme(ThemeManager.Resolve(_viewModel.Settings.Theme));
+        TerminalView.SetTheme(ThemeManager.Resolve(_viewModel.Settings.Theme),
+            _viewModel.Settings.TerminalForegroundColor);
         UpdateThemeButton();
         RestoreWindowBounds();
         SidebarColumn.Width = new GridLength(Math.Clamp(_viewModel.Settings.SidebarWidth, 225, 460));
@@ -293,7 +294,7 @@ public partial class MainWindow : Window
     private void OnThemeChanged()
     {
         var palette = ThemeManager.Current;
-        TerminalView.SetTheme(palette);
+        TerminalView.SetTheme(palette, _viewModel.Settings.TerminalForegroundColor);
         UpdateThemeButton();
     }
 
@@ -617,7 +618,9 @@ public partial class MainWindow : Window
         _viewModel.Settings.ScrollbackLines = dialog.SelectedScrollback;
         _viewModel.Settings.LowMemoryMode = dialog.SelectedLowMemory;
         _viewModel.Settings.FollowTerminalDirectory = dialog.SelectedFollowDirectory;
+        _viewModel.Settings.TerminalForegroundColor = dialog.SelectedForeground;
         _viewModel.SetTheme(dialog.SelectedTheme);
+        TerminalView.SetTheme(ThemeManager.Current, dialog.SelectedForeground);
         TerminalView.SetFontFamily(dialog.SelectedFontFamily);
         TerminalView.SetFontSize(dialog.SelectedFontSize);
         TerminalView.SetLineHeight(dialog.SelectedLineHeight);

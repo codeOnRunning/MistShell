@@ -58,6 +58,20 @@
                                      GroupName="LineHeight" Tag="1.45" MinWidth="72" />
                     </WrapPanel>
 
+                    <TextBlock Text="终端文字颜色" Style="{StaticResource FieldLabel}" Margin="2,15,0,6" />
+                    <TextBlock Text="只影响没有 ANSI 颜色的普通文字；zsh 的彩色输出不会被覆盖。留空跟随主题。"
+                               Style="{StaticResource MutedText}" TextWrapping="Wrap" Margin="2,0,0,7" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="TerminalForegroundBox" MinHeight="32" Padding="9,6"
+                                 TextChanged="TerminalForegroundBox_TextChanged" />
+                        <Button Grid.Column="1" Content="跟随主题" Style="{StaticResource GhostButton}"
+                                Height="32" Padding="8,3" Margin="7,0,0,0" Click="ClearForeground_Click" />
+                    </Grid>
+
                     <CheckBox x:Name="FollowDirectoryCheck" Content="终端目录联动" FontWeight="SemiBold" Margin="0,15,0,0" />
                     <TextBlock Text="在终端执行 cd 后，右侧文件面板自动打开对应目录。"
                                Style="{StaticResource MutedText}" TextWrapping="Wrap" Margin="26,4,0,0" />

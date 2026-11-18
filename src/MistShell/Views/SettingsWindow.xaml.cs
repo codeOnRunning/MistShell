@@ -21,6 +21,7 @@ public partial class SettingsWindow : Window
         _themePreview = themePreview;
         _fontSize = Math.Clamp(settings.TerminalFontSize, 10, 26);
         _fontFamily = settings.TerminalFontFamily;
+        TerminalForegroundBox.Text = settings.TerminalForegroundColor;
         FontSizeText.Text = _fontSize.ToString("0");
         ScrollbackBox.Text = settings.ScrollbackLines.ToString();
         LowMemoryCheck.IsChecked = settings.LowMemoryMode;
@@ -32,6 +33,7 @@ public partial class SettingsWindow : Window
     }
 
     public string SelectedTheme { get; private set; } = "Mist";
+    public string SelectedForeground { get; private set; } = "";
     public string SelectedFontFamily => _fontFamily;
     public double SelectedLineHeight { get; private set; } = 1.25;
     public double SelectedFontSize => _fontSize;
@@ -148,6 +150,25 @@ public partial class SettingsWindow : Window
         FontSizeText.Text = _fontSize.ToString("0");
     }
 
+    private void TerminalForegroundBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+    {
+        if (TerminalForegroundBox is null) return;
+        try
+        {
+            var color = (Color)ColorConverter.ConvertFromString(TerminalForegroundBox.Text.Trim());
+            TerminalForegroundBox.BorderBrush = new SolidColorBrush(color);
+        }
+        catch
+        {
+            TerminalForegroundBox.BorderBrush = (Brush)FindResource("BorderBrush");
+        }
+    }
+
+    private void ClearForeground_Click(object sender, RoutedEventArgs e)
+    {
+        TerminalForegroundBox.Text = "";
+    }
+
     private void Shortcuts_Click(object sender, RoutedEventArgs e)
     {
         new ShortcutHelpWindow { Owner = this }.ShowDialog();
@@ -166,6 +187,23 @@ public partial class SettingsWindow : Window
             MessageBox.Show(this, "回滚行数必须在 500–20000 之间。", "MistShell", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
+
+        var foreground = TerminalForegroundBox.Text.Trim();
+        if (foreground.Length > 0)
+        {
+            try
+            {
+                var color = (Color)ColorConverter.ConvertFromString(foreground);
+                foreground = $"#{color.R:X2}{color.G:X2}{color.B:X2}";
+            }
+            catch
+            {
+                MessageBox.Show(this, "终端文字颜色格式不正确，请输入 #RRGGBB。", "MistShell",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+        }
+        SelectedForeground = foreground;
         // SelectedTheme is set by the checked theme radio button.
         SelectedScrollback = scrollback;
         SelectedLowMemory = LowMemoryCheck.IsChecked == true;
