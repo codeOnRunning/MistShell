@@ -24,10 +24,17 @@ description: MistShell 项目专用交付门禁。用户未明确确认验收完
 2. 包名固定为 `mistShell.zip`，**不带版本号**，直接覆盖旧包。
 3. 确认打包成功、包内容完整后，再提交代码并按项目流程推送。
 
+## Windows 启动入口
+
+- 不要创建桌面快捷方式。
+- 安装或更新后，为当前用户创建开始菜单快捷方式：`%APPDATA%\Microsoft\Windows\Start Menu\Programs\MistShell.lnk`，指向最新的 `MistShell.exe`。
+- 目标是让用户按 `Win` 键输入 `MistShell`（或 `mist`）即可用键盘启动。
+
 ## 检查清单
 
 - [ ] 用户已明确确认验收完成
 - [ ] 最新代码已构建并通过测试
 - [ ] `G:\shares\tool\mistShell.zip` 已更新
 - [ ] 包文件名不含版本号
+- [ ] 开始菜单快捷方式已创建，桌面快捷方式不存在
 - [ ] 代码提交完成
