@@ -17,6 +17,7 @@ public partial class ShortcutHelpWindow : Window
         Add("Ctrl+Shift+V", "粘贴（备用）");
         Add("Ctrl+Shift+A", "全选终端内容");
         Add("Ctrl+Shift+L", "清屏");
+        Add("Ctrl+Shift+F", "搜索终端内容；Enter / Shift+Enter 跳转，Esc 关闭");
         Add("Ctrl+鼠标滚轮", "调整终端字号");
         Add("Enter", "快捷命令栏发送；连接列表聚焦时连接");
         Add("↑ / ↓", "快捷命令历史");

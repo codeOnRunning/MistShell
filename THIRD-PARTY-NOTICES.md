@@ -16,6 +16,13 @@ MistShell includes or depends on the following third-party components.
 - Files: `src/MistShell/Assets/terminal/web/addon-fit.js`
 - License text: `src/MistShell/Assets/terminal/web/LICENSE.addon-fit.txt`
 
+## @xterm/addon-search
+
+- Project: https://github.com/xtermjs/xterm.js
+- License: MIT
+- Files: `src/MistShell/Assets/terminal/web/addon-search.js`
+- License text: `src/MistShell/Assets/terminal/web/LICENSE.addon-search.txt`
+
 ## SSH.NET
 
 - Project: https://github.com/sshnet/SSH.NET

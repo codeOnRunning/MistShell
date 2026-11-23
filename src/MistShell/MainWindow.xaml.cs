@@ -344,8 +344,8 @@ public partial class MainWindow : Window
         var session = _viewModel.CreateSession(profile);
         try
         {
-            await TerminalView.CreateSessionAsync(session.Id);
-            await session.ConnectAsync(120, 32);
+            var (cols, rows) = await TerminalView.CreateSessionAsync(session.Id);
+            await session.ConnectAsync(cols, rows);
             await _viewModel.SaveConnectionsAsync();
             _viewModel.SetStatus($"已连接 {profile.Name}");
             if (_viewModel.IsDockOpen && _viewModel.DockIndex == 1)
@@ -582,8 +582,9 @@ public partial class MainWindow : Window
 
         try
         {
+            var (cols, rows) = TerminalView.GetSessionSize(session.Id);
             TerminalView.ClearSession(session.Id);
-            await session.ReconnectAsync(120, 32, password, passphrase);
+            await session.ReconnectAsync(cols, rows, password, passphrase);
             _viewModel.SetStatus($"已连接 {session.Title}");
             if (_viewModel.IsDockOpen && _viewModel.DockIndex == 1)
                 await session.SetMonitorVisibleAsync(true);
@@ -598,6 +599,12 @@ public partial class MainWindow : Window
     {
         if (_viewModel.SelectedSession is { } session) TerminalView.ClearSession(session.Id);
         TerminalView.FocusTerminal();
+    }
+
+    private void SearchTerminal_Click(object sender, RoutedEventArgs e)
+    {
+        if (_viewModel.SelectedSession is null) return;
+        TerminalView.OpenSearch();
     }
 
     private void ThemeButton_Click(object sender, RoutedEventArgs e) => _viewModel.ToggleLightDark();

@@ -14,6 +14,8 @@ namespace MistShell.Controls;
 public partial class TerminalHost : UserControl, IDisposable
 {
     private readonly ConcurrentQueue<string> _pending = new();
+    private readonly ConcurrentDictionary<string, (int Cols, int Rows)> _sessionSizes = new();
+    private readonly ConcurrentDictionary<string, TaskCompletionSource<(int Cols, int Rows)>> _sizeWaiters = new();
     private readonly TaskCompletionSource<bool> _ready = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly object _initLock = new();
     private Task? _initTask;
@@ -133,7 +135,21 @@ public partial class TerminalHost : UserControl, IDisposable
                         root.TryGetProperty("cols", out var cols) &&
                         root.TryGetProperty("rows", out var rows))
                     {
-                        ResizeRequested?.Invoke(rsid.GetString() ?? "", cols.GetInt32(), rows.GetInt32());
+                        var sessionId = rsid.GetString() ?? "";
+                        _sessionSizes[sessionId] = (cols.GetInt32(), rows.GetInt32());
+                        ResizeRequested?.Invoke(sessionId, cols.GetInt32(), rows.GetInt32());
+                    }
+                    break;
+                case "size":
+                    if (root.TryGetProperty("sessionId", out var ssid) &&
+                        root.TryGetProperty("cols", out var sizeCols) &&
+                        root.TryGetProperty("rows", out var sizeRows))
+                    {
+                        var sessionId = ssid.GetString() ?? "";
+                        var size = (Math.Max(2, sizeCols.GetInt32()), Math.Max(2, sizeRows.GetInt32()));
+                        _sessionSizes[sessionId] = size;
+                        if (_sizeWaiters.TryRemove(sessionId, out var waiter))
+                            waiter.TrySetResult(size);
                     }
                     break;
                 case "title":
@@ -179,9 +195,12 @@ public partial class TerminalHost : UserControl, IDisposable
         }
     }
 
-    public async Task CreateSessionAsync(string sessionId)
+    public async Task<(int Cols, int Rows)> CreateSessionAsync(string sessionId)
     {
         await EnsureInitializedAsync();
+        var sizeWaiter = new TaskCompletionSource<(int Cols, int Rows)>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        _sizeWaiters[sessionId] = sizeWaiter;
         SendRaw(new
         {
             type = "create",
@@ -192,7 +211,17 @@ public partial class TerminalHost : UserControl, IDisposable
             lineHeight = _lineHeight
         });
         SendRaw(new { type = "activate", sessionId });
+        SendRaw(new { type = "getSize", sessionId });
+
+        var completed = await Task.WhenAny(sizeWaiter.Task, Task.Delay(TimeSpan.FromSeconds(2)));
+        _sizeWaiters.TryRemove(sessionId, out _);
+        if (completed == sizeWaiter.Task)
+            return sizeWaiter.Task.Result;
+        return _sessionSizes.TryGetValue(sessionId, out var fallback) ? fallback : (120, 32);
     }
+
+    public (int Cols, int Rows) GetSessionSize(string sessionId)
+        => _sessionSizes.TryGetValue(sessionId, out var size) ? size : (120, 32);
 
     public void ActivateSession(string sessionId)
     {
@@ -201,6 +230,9 @@ public partial class TerminalHost : UserControl, IDisposable
 
     public void CloseSession(string sessionId)
     {
+        _sessionSizes.TryRemove(sessionId, out _);
+        if (_sizeWaiters.TryRemove(sessionId, out var waiter))
+            waiter.TrySetResult((120, 32));
         SendRaw(new { type = "close", sessionId });
     }
 
@@ -212,6 +244,12 @@ public partial class TerminalHost : UserControl, IDisposable
     public void FocusTerminal()
     {
         SendRaw(new { type = "focus" });
+    }
+
+    public void OpenSearch()
+    {
+        WebView.Focus();
+        SendRaw(new { type = "search" });
     }
 
     public void Write(string sessionId, byte[] data)
@@ -307,6 +345,8 @@ public partial class TerminalHost : UserControl, IDisposable
     {
         if (_disposed) return;
         _disposed = true;
+        foreach (var waiter in _sizeWaiters.Values) waiter.TrySetResult((120, 32));
+        _sizeWaiters.Clear();
         try
         {
             if (WebView.CoreWebView2 is not null)

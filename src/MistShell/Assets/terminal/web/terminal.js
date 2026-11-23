@@ -9,9 +9,17 @@
   let currentScrollback = 2000;
   let currentTheme = null;
   let hostReady = false;
+  let searchVisible = false;
+  let searchCaseSensitive = false;
+  let searchSessionId = null;
+  let searchComposing = false;
 
   const stack = document.getElementById('terminal-stack');
   const menu = document.getElementById('context-menu');
+  const searchBar = document.getElementById('search-bar');
+  const searchInput = document.getElementById('search-input');
+  const searchCount = document.getElementById('search-count');
+  const searchCaseButton = document.getElementById('search-case');
 
   function send(message) {
     if (!hostReady || !window.chrome || !window.chrome.webview) return;
@@ -65,6 +73,8 @@
 
     const fit = new FitAddon.FitAddon();
     term.loadAddon(fit);
+    const search = new SearchAddon.SearchAddon();
+    term.loadAddon(search);
     term.open(wrapper);
 
     // Ctrl+V also emits a native paste event in WebView2. Our custom key
@@ -159,12 +169,158 @@
       return true;
     });
 
-    const record = { term: term, fit: fit, wrapper: wrapper, title: '' };
+    const record = { term: term, fit: fit, search: search, wrapper: wrapper, title: '' };
     sessions.set(id, record);
+    search.onDidChangeResults(function (result) {
+      if (searchVisible && activeId === id) updateSearchCount(result);
+    });
     return record;
   }
 
+  function parseHexColor(value) {
+    const match = /^#?([0-9a-f]{6})$/i.exec(String(value || '').trim());
+    if (!match) return null;
+    const number = parseInt(match[1], 16);
+    return { r: (number >> 16) & 255, g: (number >> 8) & 255, b: number & 255 };
+  }
+
+  function searchDecorationOptions() {
+    const style = getComputedStyle(document.documentElement);
+    const background = parseHexColor(style.getPropertyValue('--term-bg')) || { r: 233, g: 230, b: 223 };
+    const isDark = (0.2126 * background.r + 0.7152 * background.g + 0.0722 * background.b) < 128;
+    if (isDark) {
+      return {
+        matchBackground: '#5A4A1F',
+        matchBorder: '#8A7433',
+        matchOverviewRuler: '#C9A94E',
+        activeMatchBackground: '#B26A1F',
+        activeMatchBorder: '#F0A33A',
+        activeMatchColorOverviewRuler: '#F0A33A'
+      };
+    }
+    return {
+      matchBackground: '#F3E2A1',
+      matchBorder: '#D9BE62',
+      matchOverviewRuler: '#D9BE62',
+      activeMatchBackground: '#F2B45C',
+      activeMatchBorder: '#D9822B',
+      activeMatchColorOverviewRuler: '#E08A2E'
+    };
+  }
+
+  function buildSearchOptions(incremental) {
+    return {
+      caseSensitive: searchCaseSensitive,
+      incremental: !!incremental,
+      decorations: searchDecorationOptions()
+    };
+  }
+
+  function updateSearchCount(result) {
+    if (!searchInput.value) {
+      searchCount.textContent = '';
+      searchCount.classList.remove('no-results');
+      return;
+    }
+    const count = result && result.resultCount > 0 ? result.resultCount : 0;
+    if (!count) {
+      searchCount.textContent = '无结果';
+      searchCount.classList.add('no-results');
+      return;
+    }
+    const index = result && result.resultIndex >= 0 ? result.resultIndex + 1 : 0;
+    searchCount.textContent = index > 0 ? index + '/' + count : count + '+';
+    searchCount.classList.remove('no-results');
+  }
+
+  function clearSearchOnRecord(record) {
+    if (!record) return;
+    try {
+      record.search.clearDecorations();
+      record.term.clearSelection();
+    } catch (_) { }
+  }
+
+  function runSearch(direction, incremental) {
+    const record = activeId ? sessions.get(activeId) : null;
+    if (!record || !searchVisible) return;
+    const value = searchInput.value;
+    if (!value) {
+      clearSearchOnRecord(record);
+      updateSearchCount({ resultIndex: -1, resultCount: 0 });
+      return;
+    }
+    try {
+      const options = buildSearchOptions(incremental);
+      const found = direction === 'prev'
+        ? record.search.findPrevious(value, options)
+        : record.search.findNext(value, options);
+      if (!found) {
+        clearSearchOnRecord(record);
+        updateSearchCount({ resultIndex: -1, resultCount: 0 });
+      }
+    } catch (_) {
+      updateSearchCount({ resultIndex: -1, resultCount: 0 });
+    }
+  }
+
+  function focusSearchInput() {
+    requestAnimationFrame(function () {
+      searchInput.focus();
+      searchInput.select();
+    });
+  }
+
+  function openSearch() {
+    if (!activeId) return;
+    if (searchVisible) {
+      focusSearchInput();
+      return;
+    }
+    const record = sessions.get(activeId);
+    if (!record) return;
+    hideMenu();
+    searchVisible = true;
+    searchSessionId = activeId;
+    const selected = record.term.getSelection();
+    if (selected && selected.trim() && selected.indexOf('\n') === -1) {
+      searchInput.value = selected.trim();
+    }
+    searchBar.classList.add('visible');
+    searchBar.setAttribute('aria-hidden', 'false');
+    focusSearchInput();
+    if (searchInput.value) runSearch('next', false);
+    else updateSearchCount({ resultIndex: -1, resultCount: 0 });
+  }
+
+  function closeSearch(refocusTerminal) {
+    if (!searchVisible) return;
+    searchVisible = false;
+    searchBar.classList.remove('visible');
+    searchBar.setAttribute('aria-hidden', 'true');
+    clearSearchOnRecord(sessions.get(searchSessionId || activeId));
+    searchSessionId = null;
+    searchCount.textContent = '';
+    searchCount.classList.remove('no-results');
+    if (refocusTerminal !== false) {
+      const record = activeId ? sessions.get(activeId) : null;
+      if (record) record.term.focus();
+    }
+  }
+
+  function toggleSearchCase() {
+    searchCaseSensitive = !searchCaseSensitive;
+    searchCaseButton.setAttribute('aria-pressed', searchCaseSensitive ? 'true' : 'false');
+    searchInput.focus();
+    if (searchInput.value) runSearch('next', false);
+  }
+
   function activate(id) {
+    const switchedForSearch = searchVisible && searchSessionId !== id;
+    if (switchedForSearch) {
+      clearSearchOnRecord(sessions.get(searchSessionId));
+      searchSessionId = id;
+    }
     activeId = id;
     for (const [sessionId, record] of sessions) {
       record.wrapper.classList.toggle('active', sessionId === id);
@@ -174,6 +330,10 @@
     requestAnimationFrame(function () {
       try { record.fit.fit(); } catch (_) { }
       scrollToBottom(record);
+      if (switchedForSearch) {
+        if (searchInput.value) runSearch('next', false);
+        else updateSearchCount({ resultIndex: -1, resultCount: 0 });
+      }
       record.term.focus();
     });
   }
@@ -223,18 +383,24 @@
     if (record) {
       record.term.clear();
       record.term.write('\x1b[2J\x1b[H');
+      if (searchVisible && id === activeId && searchInput.value) runSearch('next', false);
     }
   }
 
   function closeSession(id) {
     const record = sessions.get(id);
     if (!record) return;
+    if (searchSessionId === id) {
+      clearSearchOnRecord(record);
+      searchSessionId = null;
+    }
     try { record.term.dispose(); } catch (_) { }
     record.wrapper.remove();
     sessions.delete(id);
     if (activeId === id) {
       activeId = sessions.size ? sessions.keys().next().value : null;
       if (activeId) activate(activeId);
+      else closeSearch(false);
     }
   }
 
@@ -264,6 +430,7 @@
         });
       } catch (_) { }
     }
+    if (searchVisible && searchInput.value) runSearch('next', false);
   }
 
   function applyFontSize(size) {
@@ -364,6 +531,73 @@
   window.addEventListener('blur', hideMenu);
   window.addEventListener('resize', fitActive);
 
+  document.addEventListener('keydown', function (event) {
+    if (event.isComposing) return;
+    const isFindKey = event.code === 'KeyF' || (event.key && event.key.toLowerCase() === 'f');
+    if (event.ctrlKey && event.shiftKey && !event.altKey && isFindKey) {
+      event.preventDefault();
+      event.stopPropagation();
+      openSearch();
+      return;
+    }
+    if (!searchVisible) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      event.stopPropagation();
+      closeSearch();
+      return;
+    }
+    if (event.key === 'F3') {
+      event.preventDefault();
+      event.stopPropagation();
+      runSearch(event.shiftKey ? 'prev' : 'next', false);
+    }
+  }, true);
+
+  searchInput.addEventListener('compositionstart', function () {
+    searchComposing = true;
+  });
+
+  searchInput.addEventListener('compositionend', function () {
+    searchComposing = false;
+    runSearch('next', true);
+  });
+
+  searchInput.addEventListener('input', function () {
+    if (searchComposing) return;
+    runSearch('next', true);
+  });
+
+  searchInput.addEventListener('keydown', function (event) {
+    if (event.isComposing) return;
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      runSearch(event.shiftKey ? 'prev' : 'next', false);
+    }
+  });
+
+  document.getElementById('search-prev').addEventListener('mousedown', function (event) {
+    event.preventDefault();
+  });
+  document.getElementById('search-next').addEventListener('mousedown', function (event) {
+    event.preventDefault();
+  });
+  document.getElementById('search-case').addEventListener('mousedown', function (event) {
+    event.preventDefault();
+  });
+  document.getElementById('search-prev').addEventListener('click', function () {
+    runSearch('prev', false);
+    searchInput.focus();
+  });
+  document.getElementById('search-next').addEventListener('click', function () {
+    runSearch('next', false);
+    searchInput.focus();
+  });
+  document.getElementById('search-case').addEventListener('click', toggleSearchCase);
+  document.getElementById('search-close').addEventListener('click', function () {
+    closeSearch();
+  });
+
   let lastFontWheelAt = 0;
   document.addEventListener('wheel', function (event) {
     if (!event.ctrlKey || !event.target.closest('.term-wrap')) return;
@@ -391,7 +625,8 @@
     else if (action === 'selectall') {
       const record = sessions.get(activeId);
       if (record) { record.term.selectAll(); record.term.focus(); }
-    } else if (action === 'clear') clearSession(activeId);
+    } else if (action === 'search') openSearch();
+    else if (action === 'clear') clearSession(activeId);
     hideMenu();
   });
 
@@ -430,6 +665,25 @@
         break;
       case 'font':
         applyFont(message.fontFamily, message.fontSize, message.lineHeight);
+        break;
+      case 'search':
+        openSearch();
+        break;
+      case 'getSize':
+        {
+          const record = sessions.get(message.sessionId);
+          if (record) {
+            requestAnimationFrame(function () {
+              try { record.fit.fit(); } catch (_) { }
+              send({
+                type: 'size',
+                sessionId: message.sessionId,
+                cols: record.term.cols,
+                rows: record.term.rows
+              });
+            });
+          }
+        }
         break;
       case 'paste':
         {

@@ -10,15 +10,33 @@
 </head>
 <body>
   <div id="terminal-stack" aria-label="SSH 终端"></div>
+  <div id="search-bar" role="search" aria-hidden="true" aria-label="终端内容搜索">
+    <input id="search-input" type="text" placeholder="搜索终端内容" autocomplete="off"
+           spellcheck="false" aria-label="搜索内容" />
+    <span id="search-count" class="search-count" aria-live="polite"></span>
+    <button id="search-prev" type="button" class="search-button" title="上一个匹配（Shift+Enter）" aria-label="上一个匹配">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 10l4-4 4 4" /></svg>
+    </button>
+    <button id="search-next" type="button" class="search-button" title="下一个匹配（Enter）" aria-label="下一个匹配">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" /></svg>
+    </button>
+    <button id="search-case" type="button" class="search-button search-case" title="区分大小写" aria-label="区分大小写"
+            aria-pressed="false">Aa</button>
+    <button id="search-close" type="button" class="search-button" title="关闭搜索（Esc）" aria-label="关闭搜索">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" /></svg>
+    </button>
+  </div>
   <div id="context-menu" role="menu" aria-hidden="true">
     <button type="button" data-action="copy">复制</button>
     <button type="button" data-action="paste">粘贴</button>
     <button type="button" data-action="selectall">全选</button>
     <div class="menu-sep"></div>
+    <button type="button" data-action="search">搜索…<span class="menu-shortcut">Ctrl+Shift+F</span></button>
     <button type="button" data-action="clear">清屏</button>
   </div>
   <script src="xterm.js"></script>
   <script src="addon-fit.js"></script>
+  <script src="addon-search.js"></script>
   <script src="terminal.js"></script>
 </body>
 </html>

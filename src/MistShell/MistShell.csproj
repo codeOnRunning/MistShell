@@ -11,7 +11,7 @@
     <Product>MistShell</Product>
     <Description>轻量、护眼的 Windows SSH / SFTP 工作台</Description>
     <Company>MistShell</Company>
-    <Version>0.1.26</Version>
+    <Version>0.1.27</Version>
     <PlatformTarget>x64</PlatformTarget>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Assets\app.ico</ApplicationIcon>
